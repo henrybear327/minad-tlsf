@@ -16,7 +16,7 @@
 static size_t PAGE;
 static size_t MAX_PAGES;
 static size_t prefault_pages = 0;
-static size_t prefault_page_stride = 10;
+static size_t prefault_page_stride = 100;
 static void* start_addr = 0;
 
 void* tlsf_resize(tlsf* t, size_t req_size) {
