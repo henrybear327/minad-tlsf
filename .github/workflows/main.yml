@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: install-dependencies
+    - name: run test
       run: |
             make test
       shell: bash
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: install-dependencies
+    - name: run check
       run: |
             make check
       shell: bash
