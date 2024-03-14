@@ -1,0 +1,35 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    # LLVM static analysis
+    - name: set up scan-build  
+      run: |
+            sudo apt-get update -q -y
+            sudo apt-get install -q -y clang clang-tools libsdl2-dev libsdl2-mixer-dev
+      shell: bash
+    - name: run scan-build
+      run: scan-build -v -o ~/scan-build --status-bugs --use-cc=clang --force-analyze-debug-code --show-description -analyzer-config stable-report-filename=true -enable-checker valist,nullability make
+  
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: install-dependencies
+      run: |
+            make test
+      shell: bash
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: install-dependencies
+      run: |
+            make check
+      shell: bash
