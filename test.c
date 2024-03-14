@@ -15,25 +15,30 @@
 
 static size_t PAGE;
 static size_t MAX_PAGES;
-static size_t curr_pages = 0;
+static size_t prefault_pages = 0;
+static size_t prefault_page_stride = 10;
 static void* start_addr = 0;
 
 void* tlsf_resize(tlsf* t, size_t req_size) {
     (void)t;
 
-    if (!start_addr)
+    if (!start_addr) {
         start_addr = mmap(0, MAX_PAGES * PAGE, PROT_READ | PROT_WRITE,
                           MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, -1, 0);
+        
+        // we prefault x pages in advance
+        madvise((char*)start_addr, prefault_page_stride * PAGE, MADV_POPULATE_WRITE);
+        prefault_pages = prefault_page_stride;
+    }
 
     size_t req_pages = (req_size + PAGE - 1) / PAGE;
     if (req_pages > MAX_PAGES)
         return 0;
 
-    if (req_pages != curr_pages) {
-        if (req_pages < curr_pages)
-            madvise((char*)start_addr + PAGE * req_pages, (size_t)(curr_pages - req_pages) * PAGE,
-                    MADV_DONTNEED);
-        curr_pages = req_pages;
+    if (req_pages > prefault_pages) {
+        madvise((char*)start_addr + PAGE * prefault_pages, (size_t)((prefault_page_stride + req_pages) - prefault_pages) * PAGE,
+                MADV_POPULATE_WRITE);
+        prefault_pages += req_pages + prefault_page_stride;
     }
 
     return start_addr;
